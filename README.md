@@ -253,4 +253,4 @@ Contributions welcome! Please follow the existing code style and add tests for n
 
 ---
 
-Built with ❤️ for Osstart startup incubator platform.
+Built with ❤️ for USAII Global AI Hackathon by team Revitalizers.
