@@ -26,10 +26,36 @@ interface FormData {
 interface AssumptionRow {
   id: string;
   assumption: string;
-  category: 'Market' | 'Financial' | 'Tech';
+  category: 'Market' | 'Financial' | 'Tech' | 'Operations';
   status: 'Unverified' | 'Testing' | 'Validated';
-  confidence: 'High' | 'Medium' | 'Low';
+  confidence: 'High' | 'Medium' | 'Low' | 'HIGH' | 'MEDIUM' | 'LOW';
   microSteps: string[];
+}
+
+function renderMarkdown(md: string) {
+  if (!md) return null;
+  return md.split('\n').map((line, idx) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('# ')) {
+      return <h1 key={idx} className="text-sm font-bold text-slate-900 mt-3 mb-1">{trimmed.slice(2)}</h1>;
+    }
+    if (trimmed.startsWith('## ')) {
+      return <h2 key={idx} className="text-xs font-bold text-slate-900 mt-2 mb-1">{trimmed.slice(3)}</h2>;
+    }
+    if (trimmed.startsWith('### ')) {
+      return <h3 key={idx} className="text-xs font-semibold text-slate-800 mt-2 mb-1">{trimmed.slice(4)}</h3>;
+    }
+    let content: React.ReactNode = trimmed;
+    if (trimmed.includes('**')) {
+      const parts = trimmed.split('**');
+      content = parts.map((part, pIdx) => pIdx % 2 === 1 ? <strong key={pIdx} className="font-semibold text-slate-900">{part}</strong> : part);
+    }
+    if (trimmed.startsWith('- ')) {
+      return <li key={idx} className="list-disc list-inside ml-1 my-0.5 text-slate-700 text-xs">{trimmed.slice(2)}</li>;
+    }
+    if (trimmed === '') return <div key={idx} className="h-1.5" />;
+    return <p key={idx} className="text-slate-600 my-0.5 text-xs">{content}</p>;
+  });
 }
 
 export default function OsstartDashboard() {
@@ -44,7 +70,12 @@ export default function OsstartDashboard() {
   const [showSidePanel, setShowSidePanel] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const assumptions: AssumptionRow[] = [
+  // Live simulator integration states
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [dashboardData, setDashboardData] = useState<any>(null);
+
+  const mockAssumptions: AssumptionRow[] = [
     {
       id: 'market-1',
       assumption: 'Target professionals will pay premium for convenience',
@@ -107,21 +138,60 @@ export default function OsstartDashboard() {
     },
   ];
 
+  const assumptions: AssumptionRow[] = dashboardData?.matrix
+    ? dashboardData.matrix.map((item: any, idx: number) => ({
+        id: `task-${idx}`,
+        assumption: item.task_name,
+        category: (item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()) as any,
+        status: idx === 0 ? 'Testing' : 'Unverified',
+        confidence: (item.confidence_level.charAt(0).toUpperCase() + item.confidence_level.slice(1).toLowerCase()) as any,
+        microSteps: item.micro_steps || [],
+      }))
+    : mockAssumptions;
+
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
       prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
     );
   };
 
-  const handleRunCrashTest = () => {
-    setIsDashboardActive(true);
+  const handleRunCrashTest = async () => {
+    setIsLoading(true);
+    setError(null);
     setExpandedRows([]);
+    try {
+      const response = await fetch('/api/crash-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          core_idea: formData.coreIdea,
+          target_audience: formData.targetAudience,
+          biggest_assumption: formData.biggestAssumption,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to complete the startup simulation.');
+      }
+
+      setDashboardData(data);
+      setIsDashboardActive(true);
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleReset = () => {
     setIsDashboardActive(false);
+    setDashboardData(null);
     setExpandedRows([]);
     setMobileMenuOpen(false);
+    setError(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -151,24 +221,31 @@ export default function OsstartDashboard() {
   };
 
   const getCategoryColor = (category: string) => {
-    switch (category) {
+    const normCategory = category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+    switch (normCategory) {
       case 'Market':
         return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'Financial':
         return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'Tech':
         return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+      case 'Operations':
+        return 'bg-orange-50 text-orange-700 border-orange-200';
       default:
         return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   };
 
   const getConfidenceColor = (confidence: string) => {
-    switch (confidence) {
+    const normConfidence = confidence.toUpperCase();
+    switch (normConfidence) {
+      case 'HIGH':
       case 'High':
         return 'text-emerald-600';
+      case 'MEDIUM':
       case 'Medium':
         return 'text-amber-600';
+      case 'LOW':
       case 'Low':
         return 'text-rose-600';
       default:
@@ -176,9 +253,72 @@ export default function OsstartDashboard() {
     }
   };
 
-  const validatedCount = assumptions.filter((a) => a.status === 'Validated').length;
+  const ideaClarity = dashboardData
+    ? dashboardData.clarity_score
+    : Math.round((assumptions.filter((a) => a.status === 'Validated').length / assumptions.length) * 100);
+  const validatedCount = dashboardData
+    ? Math.round(assumptions.length * (ideaClarity / 100))
+    : assumptions.filter((a) => a.status === 'Validated').length;
   const totalCount = assumptions.length;
-  const ideaClarity = Math.round((validatedCount / totalCount) * 100);
+
+  // LOADING / SIMULATION VIEW
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 flex flex-col items-center justify-center p-6 text-slate-200">
+        <style>{`
+          @keyframes loading-bar {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(20%); }
+            100% { transform: translateX(100%); }
+          }
+          @keyframes fadeIn {
+            to { opacity: 1; }
+          }
+        `}</style>
+        <div className="max-w-md w-full text-center space-y-8">
+          <div className="relative">
+            <div className="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl animate-pulse" />
+            <div className="relative inline-flex items-center justify-center w-20 h-20 bg-indigo-600/10 border border-indigo-500/30 rounded-2xl mb-4">
+              <Zap className="w-10 h-10 text-indigo-400 animate-bounce" />
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            <h2 className="text-2xl font-bold tracking-tight text-white">Running Crash-Test...</h2>
+            <p className="text-sm text-slate-400">
+              Simulating 1,000 professional personas and scanning assumptions
+            </p>
+          </div>
+
+          <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700/50">
+            <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500 h-2 rounded-full animate-[loading-bar_3s_ease-in-out_infinite] w-[70%]" />
+          </div>
+
+          <div className="bg-slate-950 border border-slate-800/80 rounded-xl p-4 font-mono text-left text-xs space-y-2 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+              <span className="text-slate-500 uppercase tracking-wider text-[10px]">Crash-Test Console</span>
+              <div className="flex gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500/30" />
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/30" />
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/30" />
+              </div>
+            </div>
+            <div className="space-y-1.5 min-h-[120px] text-slate-400">
+              <p className="text-indigo-400 font-semibold animate-pulse">Initializing simulation...</p>
+              <p className="delay-1000 animate-[fadeIn_0.5s_ease-out_forwards] opacity-0">$ osstart-simulator --personas 1000</p>
+              <p className="delay-2000 animate-[fadeIn_0.5s_ease-out_forwards] opacity-0 text-slate-500">&gt; Building cohort profiles based on audience: "{formData.targetAudience.slice(0, 40)}..."</p>
+              <p className="delay-3000 animate-[fadeIn_0.5s_ease-out_forwards] opacity-0 text-slate-500">&gt; Evaluating assumption: "{formData.biggestAssumption.slice(0, 40)}..."</p>
+              <p className="delay-4000 animate-[fadeIn_0.5s_ease-out_forwards] opacity-0 text-indigo-400 font-semibold animate-pulse">&gt; Generating 30-day posture matrices...</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-500 animate-pulse">
+            Usually takes 5-10 seconds to generate deep analytical brief
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // INPUT STATE VIEW
   if (!isDashboardActive) {
@@ -198,6 +338,15 @@ export default function OsstartDashboard() {
 
           {/* Form Card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 mb-8">
+            {error && (
+              <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-lg text-sm text-rose-700 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold">Incubation Scan Failed</p>
+                  <p className="text-xs text-rose-600 mt-1">{error}</p>
+                </div>
+              </div>
+            )}
             <h2 className="text-2xl font-bold tracking-tight text-slate-900 mb-8">The Startup Posture Scanner</h2>
 
             {/* Core Idea */}
@@ -522,17 +671,27 @@ export default function OsstartDashboard() {
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <h4 className="text-xs font-semibold text-slate-600 tracking-wide uppercase">Simulation Log</h4>
             </div>
-            <div className="bg-slate-900 text-slate-50 rounded-lg p-4 font-mono text-xs space-y-1 border border-slate-800">
+            <div className="bg-slate-900 text-slate-50 rounded-lg p-4 font-mono text-xs space-y-1.5 border border-slate-800 max-h-60 overflow-y-auto">
               <p><span className="text-emerald-400">$</span> osstart-simulator --personas 1000</p>
-              <p className="text-slate-500">Initializing crash-test environment...</p>
-              <p className="text-slate-500">
-                <span className="text-cyan-400">&gt;</span> Running market assumptions...
-              </p>
-              <p className="text-slate-500">
-                <span className="text-cyan-400">&gt;</span> Simulating 1,000 professional personas
-              </p>
-              <p className="text-amber-400">⚠ Found critical risks (3)</p>
-              <p className="mt-2 text-emerald-400">✓ Simulation complete</p>
+              {dashboardData?.simulation.logs.map((log: string, logIdx: number) => {
+                let colorClass = 'text-slate-400';
+                if (log.startsWith('[WARN]') || log.includes('WARN')) colorClass = 'text-amber-400';
+                if (log.startsWith('[CRITICAL]') || log.includes('CRITICAL')) colorClass = 'text-rose-400';
+                if (log.startsWith('[SUCCESS]') || log.startsWith('✓')) colorClass = 'text-emerald-400';
+                return (
+                  <p key={logIdx} className={colorClass}>
+                    {log}
+                  </p>
+                );
+              })}
+              {!dashboardData && (
+                <>
+                  <p className="text-slate-500">Initializing crash-test environment...</p>
+                  <p className="text-slate-500"><span className="text-cyan-400">&gt;</span> Simulating 1,000 professional personas</p>
+                  <p className="text-amber-400">⚠ Found critical risks (3)</p>
+                  <p className="text-emerald-400">✓ Simulation complete</p>
+                </>
+              )}
             </div>
           </div>
 
@@ -540,52 +699,79 @@ export default function OsstartDashboard() {
           <div>
             <h4 className="text-xs font-semibold text-slate-600 tracking-wide uppercase mb-3">Key Findings</h4>
             <div className="space-y-2">
-              <div className="flex gap-2 p-3 bg-rose-50 rounded-lg border border-rose-200">
-                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-rose-700">
-                  <strong>42%</strong> flagged safety concerns about in-home access
-                </p>
-              </div>
-              <div className="flex gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
-                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-700">
-                  <strong>38%</strong> questioned pet groomer vetting process
-                </p>
-              </div>
-              <div className="flex gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700">
-                  <strong>31%</strong> concerned about pricing vs. traditional salons
-                </p>
-              </div>
+              {dashboardData ? (
+                <>
+                  <div className="flex gap-2 p-3 bg-rose-50 rounded-lg border border-rose-200">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-rose-700">
+                      <strong>Risk Assessment:</strong> {dashboardData.simulation.churn_risk}
+                    </div>
+                  </div>
+                  <div className="flex gap-2 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-emerald-700">
+                      <strong>Customer Adoption Score:</strong> {dashboardData.simulation.adoption_score}/100
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex gap-2 p-3 bg-rose-50 rounded-lg border border-rose-200">
+                    <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-rose-700">
+                      <strong>42%</strong> flagged safety concerns about in-home access
+                    </p>
+                  </div>
+                  <div className="flex gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-700">
+                      <strong>38%</strong> questioned pet groomer vetting process
+                    </p>
+                  </div>
+                  <div className="flex gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-blue-700">
+                      <strong>31%</strong> concerned about pricing vs. traditional salons
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* AI Consultancy Brief */}
           <div>
             <h4 className="text-xs font-semibold text-slate-600 tracking-wide uppercase mb-3">AI Consultancy Brief</h4>
-            <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">🔒 Priority #1: Security & Trust</p>
-                <p className="text-slate-600">
-                  Implement background checks, insurance requirements, and live GPS tracking during
-                  appointments. Consider a "trial groom" with owner present.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">💰 Priority #2: Pricing Strategy</p>
-                <p className="text-slate-600">
-                  Your 20% take rate may be unsustainable. Groomer feedback suggests 15% is necessary
-                  for gig supply. Adjust margins or reduce CAC.
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 mb-1">👥 Priority #3: Market Expansion</p>
-                <p className="text-slate-600">
-                  Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
-                  economics and lifetime customer value.
-                </p>
-              </div>
+            <div className="space-y-3 text-xs text-slate-700 leading-relaxed max-h-[350px] overflow-y-auto">
+              {dashboardData ? (
+                <div>
+                  {renderMarkdown(dashboardData.consultancy_brief)}
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <p className="font-semibold text-slate-900 mb-1">🔒 Priority #1: Security & Trust</p>
+                    <p className="text-slate-600">
+                      Implement background checks, insurance requirements, and live GPS tracking during
+                      appointments. Consider a "trial groom" with owner present.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 mb-1">💰 Priority #2: Pricing Strategy</p>
+                    <p className="text-slate-600">
+                      Your 20% take rate may be unsustainable. Groomer feedback suggests 15% is necessary
+                      for gig supply. Adjust margins or reduce CAC.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 mb-1">👥 Priority #3: Market Expansion</p>
+                    <p className="text-slate-600">
+                      Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
+                      economics and lifetime customer value.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
