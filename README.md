@@ -1,6 +1,6 @@
 # OSSTART
 
-Osstart is a human-centric, high-fidelity MVP dashboard engineered for early-stage founders and startup incubators. Fulfilling the **AI Crash-Test** and **Zero-to-One Builder** framework, the platform strips away the noise of generic task managers to solve the single biggest risk point for newcomers: **surviving the first 30 days**. 
+Osstart (https://osstart.vercel.app) is a human-centric, high-fidelity MVP dashboard engineered for early-stage founders and startup incubators. Fulfilling the **AI Crash-Test** and **Zero-to-One Builder** framework, the platform strips away the noise of generic task managers to solve the single biggest risk point for newcomers: **surviving the first 30 days**. 
 
 By taking structural, high-density data layouts typically reserved for complex analytics tools and humanizing them into a warm, approachable workspace, Osstart maps out precise execution roadmaps. Using a multi-agent backend powered by the Google Gemini API, it runs pre-launch **"Crash-Test" Simulations**—stress-testing business assumptions against virtual consumer personas—before bridging validated founders into a high-trust network of Venture Capitalists (VCs), incubators, and peer founders.
 
