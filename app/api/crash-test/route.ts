@@ -1,6 +1,10 @@
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { supabase } from '@/lib/supabase-server';
+
 
 // Type definitions for the structured response
 interface MicroStep {

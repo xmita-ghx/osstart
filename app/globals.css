@@ -1,4 +1,4 @@
-/* Osstart Dashboard Styles */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,109 +6,140 @@
 
 @layer base {
   body {
-    @apply font-sans antialiased;
+    background-color: #050816;
+    color: #e2e8f0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    pointer-events: none;
+    z-index: -1;
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 15% 5%, #22d3ee14, transparent 35rem),
+      radial-gradient(circle at 85% 8%, #8b5cf61c, transparent 40rem),
+      radial-gradient(circle at 50% 90%, #10b9810c, transparent 35rem);
+  }
+
+  body::after {
+    content: "";
+    pointer-events: none;
+    z-index: -1;
+    position: fixed;
+    inset: 0;
+    opacity: 0.15;
+    background-image: 
+      linear-gradient(#ffffff05 1px, transparent 1px),
+      linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(circle at 50% 50%, #000, transparent 80%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans tracking-tight;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: -0.01em;
+  }
+  
+  pre, code, kbd, .mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace !important;
   }
 }
 
 @layer components {
-  /* Card component */
-  .card {
-    @apply bg-white rounded-xl border border-slate-200 p-6 hover:border-slate-300 transition-colors;
+  /* Neon glow card (Glassmorphism) */
+  .neon-card {
+    background: rgba(11, 17, 32, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+    transition: all 0.2s ease-in-out;
   }
 
-  /* Button variants */
-  .btn-primary {
-    @apply bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+  .neon-card:hover {
+    border-color: rgba(34, 211, 238, 0.25);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 18px rgba(34, 211, 238, 0.04);
   }
 
-  .btn-secondary {
-    @apply px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors;
+  /* Buttons */
+  .btn-neon-primary {
+    background: linear-gradient(135deg, #22d3ee, #8b5cf6);
+    color: #050816;
+    font-weight: 850;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.03em;
+    border: 1px solid rgba(34, 211, 238, 0.4);
+    box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
+    transition: all 0.2s ease-in-out;
   }
 
-  /* Badge variants */
-  .badge-success {
-    @apply bg-emerald-50 text-emerald-700 border-emerald-200;
+  .btn-neon-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #67e8f9, #a78bfa);
+    box-shadow: 0 0 28px rgba(34, 211, 238, 0.35);
+    transform: translateY(-1px);
   }
 
-  .badge-warning {
-    @apply bg-amber-50 text-amber-700 border-amber-200;
+  .btn-neon-primary:active:not(:disabled) {
+    transform: translateY(0);
   }
 
-  .badge-danger {
-    @apply bg-rose-50 text-rose-700 border-rose-200;
+  .btn-neon-secondary {
+    background: rgba(34, 211, 238, 0.05);
+    color: #22d3ee;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    border: 1px solid rgba(34, 211, 238, 0.2);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.04);
+    transition: all 0.2s ease-in-out;
   }
 
-  .badge-neutral {
-    @apply bg-slate-50 text-slate-600 border-slate-200;
+  .btn-neon-secondary:hover:not(:disabled) {
+    border-color: #22d3ee;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.18);
+    background: rgba(34, 211, 238, 0.08);
+    transform: translateY(-1px);
   }
 
-  /* Typography */
-  .text-heading-lg {
-    @apply text-2xl font-bold tracking-tight text-slate-900;
+  /* Input fields */
+  .neon-input {
+    background: rgba(2, 6, 23, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    color: #f1f5f9;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    transition: all 0.15s ease-in-out;
   }
 
-  .text-heading-md {
-    @apply text-lg font-semibold tracking-tight text-slate-900;
+  .neon-input:focus {
+    border-color: #22d3ee;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
+    outline: none;
   }
 
-  .text-heading-sm {
-    @apply text-sm font-semibold tracking-tight text-slate-900;
+  /* Scrollbar override */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
 
-  .text-body-md {
-    @apply text-sm text-slate-700;
+  ::-webkit-scrollbar-track {
+    background: rgba(5, 8, 22, 0.5);
   }
 
-  .text-body-sm {
-    @apply text-xs text-slate-600;
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.15);
+    border-radius: 99px;
   }
 
-  .text-caption {
-    @apply text-xs text-slate-500;
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 211, 238, 0.4);
   }
-
-  /* Table styles */
-  .table-cell {
-    @apply px-6 py-4 text-sm text-slate-700;
-  }
-
-  .table-header {
-    @apply px-6 py-3 text-left text-xs font-semibold text-slate-600 tracking-wide bg-slate-50;
-  }
-}
-
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-150;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  @apply w-2;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-slate-100 rounded;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded hover:bg-slate-400;
-}
-
-/* Animation for pulse effect */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
