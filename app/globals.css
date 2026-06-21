@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,45 +6,17 @@
 
 @layer base {
   body {
-    background-color: #050816;
-    color: #e2e8f0;
+    background-color: #090D16;
+    color: #f1f5f9;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
     min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  body::before {
-    content: "";
-    pointer-events: none;
-    z-index: -1;
-    position: fixed;
-    inset: 0;
-    background: 
-      radial-gradient(circle at 15% 5%, #22d3ee14, transparent 35rem),
-      radial-gradient(circle at 85% 8%, #8b5cf61c, transparent 40rem),
-      radial-gradient(circle at 50% 90%, #10b9810c, transparent 35rem);
-  }
-
-  body::after {
-    content: "";
-    pointer-events: none;
-    z-index: -1;
-    position: fixed;
-    inset: 0;
-    opacity: 0.15;
-    background-image: 
-      linear-gradient(#ffffff05 1px, transparent 1px),
-      linear-gradient(90deg, #ffffff05 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(circle at 50% 50%, #000, transparent 80%);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Syne', sans-serif;
-    letter-spacing: -0.01em;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.015em;
   }
   
   pre, code, kbd, .mono {
@@ -53,74 +25,63 @@
 }
 
 @layer components {
-  /* Neon glow card (Glassmorphism) */
+  /* Sleek slate surface card */
   .neon-card {
-    background: rgba(11, 17, 32, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
+    background: #121824;
+    border: 1px solid rgba(30, 41, 59, 0.8); /* border-slate-800/80 */
+    box-shadow: none; /* Eliminate all heavy drop-shadow blurs */
     border-radius: 16px;
-    transition: all 0.2s ease-in-out;
+    transition: border-color 0.15s ease-in-out;
   }
 
   .neon-card:hover {
     border-color: rgba(34, 211, 238, 0.25);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), 0 0 18px rgba(34, 211, 238, 0.04);
   }
 
   /* Buttons */
   .btn-neon-primary {
-    background: linear-gradient(135deg, #22d3ee, #8b5cf6);
-    color: #050816;
-    font-weight: 850;
-    font-family: 'Syne', sans-serif;
-    letter-spacing: 0.03em;
-    border: 1px solid rgba(34, 211, 238, 0.4);
-    box-shadow: 0 0 18px rgba(34, 211, 238, 0.18);
-    transition: all 0.2s ease-in-out;
+    background: #22d3ee;
+    color: #090D16;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    border: 1px solid #22d3ee;
+    transition: all 0.15s ease-in-out;
+    border-radius: 12px;
   }
 
   .btn-neon-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #67e8f9, #a78bfa);
-    box-shadow: 0 0 28px rgba(34, 211, 238, 0.35);
-    transform: translateY(-1px);
-  }
-
-  .btn-neon-primary:active:not(:disabled) {
-    transform: translateY(0);
+    background: #67e8f9;
+    border-color: #67e8f9;
   }
 
   .btn-neon-secondary {
-    background: rgba(34, 211, 238, 0.05);
-    color: #22d3ee;
-    font-weight: 700;
-    font-family: 'Syne', sans-serif;
-    border: 1px solid rgba(34, 211, 238, 0.2);
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.04);
-    transition: all 0.2s ease-in-out;
+    background: #121824;
+    color: #e2e8f0;
+    font-weight: 600;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    border: 1px solid rgba(30, 41, 59, 0.8);
+    transition: all 0.15s ease-in-out;
+    border-radius: 12px;
   }
 
   .btn-neon-secondary:hover:not(:disabled) {
-    border-color: #22d3ee;
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.18);
-    background: rgba(34, 211, 238, 0.08);
-    transform: translateY(-1px);
+    border-color: #475569;
+    background: #1e293b;
   }
 
   /* Input fields */
   .neon-input {
-    background: rgba(2, 6, 23, 0.7);
-    border: 1px solid rgba(148, 163, 184, 0.15);
-    color: #f1f5f9;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
+    background: #090D16;
+    border: 1px solid rgba(30, 41, 59, 0.8);
+    color: #f8fafc;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: 0.875rem;
     border-radius: 10px;
     transition: all 0.15s ease-in-out;
   }
 
   .neon-input:focus {
     border-color: #22d3ee;
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
     outline: none;
   }
 
@@ -131,15 +92,15 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(5, 8, 22, 0.5);
+    background: #090D16;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.15);
+    background: #1e293b;
     border-radius: 99px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(34, 211, 238, 0.4);
+    background: #334155;
   }
 }

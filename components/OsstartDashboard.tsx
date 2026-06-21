@@ -401,29 +401,29 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
     const progressPercent = Math.min(((activeStepIndex + 1) / SIMULATED_STEPS.length) * 100, 100);
 
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-slate-800">
+      <div className="min-h-screen bg-[#090D16] flex flex-col items-center justify-center p-6 text-slate-100">
         <div className="max-w-2xl w-full space-y-8 animate-fade-in">
           {/* Header */}
           <div className="text-center space-y-3">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-xl mb-2">
-              <Zap className="w-6 h-6 text-indigo-600 animate-bounce" />
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-[#121824] border border-slate-800/80 rounded-xl mb-2">
+              <Zap className="w-6 h-6 text-cyan-400 animate-pulse" />
             </div>
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900">Running Startup Crash-Test...</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="text-3xl font-bold tracking-tight text-white">Running Startup Crash-Test...</h2>
+            <p className="text-sm text-slate-450">
               Simulating 1,000 professional personas and validating assumption posture
             </p>
           </div>
 
           {/* Console Container */}
-          <div className="bg-slate-950 border border-slate-900 rounded-2xl p-6 font-mono text-left text-sm space-y-4 shadow-xl text-slate-300">
+          <div className="bg-[#121824] border border-slate-800/80 rounded-2xl p-8 font-mono text-left text-sm space-y-4 text-slate-300">
             {/* Console Header */}
-            <div className="flex items-center justify-between border-b border-slate-850 pb-3 mb-2">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-2">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-rose-500" />
                 <span className="w-3 h-3 rounded-full bg-amber-500" />
                 <span className="w-3 h-3 rounded-full bg-emerald-500" />
               </div>
-              <span className="text-slate-500 uppercase tracking-wider text-xs">Simulator Console</span>
+              <span className="text-slate-500 uppercase tracking-wider text-xs font-sans font-semibold">Simulator Console</span>
             </div>
 
             {/* Console Logs */}
@@ -437,8 +437,8 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                       <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
                     ) : isActive ? (
                       <div className="w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5 relative">
-                        <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping absolute" />
-                        <span className="w-2 h-2 rounded-full bg-indigo-500 relative" />
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping absolute" />
+                        <span className="w-2 h-2 rounded-full bg-[#22d3ee] relative" />
                       </div>
                     ) : null}
                     <span className={`leading-relaxed ${isCompleted ? 'text-slate-500' : 'text-slate-100 font-semibold'}`}>
@@ -452,13 +452,13 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
 
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-semibold text-slate-500 px-1">
+            <div className="flex justify-between text-xs font-semibold text-slate-400 px-1">
               <span>Simulation Progress</span>
               <span>{Math.round(progressPercent)}%</span>
             </div>
-            <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden border border-slate-300/50">
+            <div className="w-full bg-[#121824] rounded-full h-2 overflow-hidden border border-slate-800/80">
               <div 
-                className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out" 
+                className="bg-cyan-500 h-2 rounded-full transition-all duration-500 ease-out" 
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -479,7 +479,7 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-[#22d3ee3d] shadow-[0_0_24px_rgba(34,211,238,0.1)]">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4 bg-[#121824] border border-slate-800/80">
               <Zap className="w-7 h-7 text-[#22d3ee] animate-pulse" />
             </div>
             <h1 className="text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-400 to-purple-400 mb-2">
@@ -507,7 +507,7 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
               </h2>
               <button
                 onClick={handleAutofillPreset}
-                className="bg-slate-900 border border-slate-800 hover:border-[#22d3ee]/50 text-cyan-400 hover:text-white transition-all px-4 py-2.5 rounded-xl text-[11px] font-mono tracking-wider uppercase flex items-center gap-1.5"
+                className="bg-slate-900 border border-slate-800 hover:border-[#22d3ee]/50 text-cyan-400 hover:text-white transition-all px-4 py-2.5 rounded-xl text-[11px] font-sans font-semibold tracking-wider uppercase flex items-center gap-1.5"
               >
                 🎲 Autofill Demo Idea
               </button>
@@ -586,13 +586,12 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
     );
   }
 
-  // DASHBOARD VIEW
   return (
     <div className="min-h-screen flex flex-col lg:flex-row relative z-10 text-slate-100">
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="lg:hidden fixed top-4 right-4 z-40 p-2 bg-[#0b1120d1] border border-slate-800 rounded-xl hover:bg-slate-900"
+        className="lg:hidden fixed top-4 right-4 z-40 p-2 bg-[#121824] border border-slate-800/80 rounded-xl hover:bg-slate-900"
       >
         {mobileMenuOpen ? (
           <X className="w-5 h-5 text-slate-350" />
@@ -604,17 +603,17 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="bg-[#0b1120b8] border-b border-slate-800/85 sticky top-0 z-10 backdrop-blur-md">
+        <div className="bg-[#090D16]/90 border-b border-slate-800/80 sticky top-0 z-10 backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-1.5">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/10 to-purple-500/10 border border-[#22d3ee3d] shadow-[0_0_12px_rgba(34,211,238,0.05)]">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#121824] border border-slate-800/80">
                     <Zap className="w-4.5 h-4.5 text-[#22d3ee]" />
                   </div>
                   <h1 className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-400 to-purple-400">Osstart Dashboard</h1>
                 </div>
-                <p className="text-xs font-mono text-slate-400 tracking-wide">30-DAY STARTUP POSTURE ASSESSMENT</p>
+                <p className="text-xs font-sans font-semibold text-slate-450 tracking-wider">30-DAY STARTUP POSTURE ASSESSMENT</p>
               </div>
               <button
                 onClick={handleReset}
@@ -631,28 +630,28 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
           {/* Analytics Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Card 1: Idea Clarity Score */}
-            <div className="neon-card p-6">
+            <div className="neon-card p-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 tracking-wider font-mono uppercase mb-1">Idea Clarity Score</p>
+                  <p className="text-[10px] font-bold text-slate-400 tracking-wider font-sans uppercase mb-1">Idea Clarity Score</p>
                   <p className="text-3xl font-extrabold text-white">{ideaClarity}%</p>
                 </div>
                 <BarChart3 className="w-5 h-5 text-cyan-400" />
               </div>
-              <div className="w-full bg-slate-900 border border-slate-800 rounded-full h-2">
+              <div className="w-full bg-slate-950 border border-slate-800/80 rounded-full h-2">
                 <div
-                  className="bg-gradient-to-r from-cyan-400 to-purple-500 h-2 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(34,211,238,0.3)]"
+                  className="bg-gradient-to-r from-cyan-400 to-purple-500 h-2 rounded-full transition-all duration-500"
                   style={{ width: `${ideaClarity}%` }}
                 />
               </div>
-              <p className="text-[10px] text-slate-500 font-mono mt-3">{validatedCount} of {totalCount} assumptions validated</p>
+              <p className="text-[10px] text-slate-500 font-sans font-medium mt-3">{validatedCount} of {totalCount} assumptions validated</p>
             </div>
 
             {/* Card 2: Current Sprint */}
-            <div className="neon-card p-6">
+            <div className="neon-card p-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 tracking-wider font-mono uppercase mb-2">Current Sprint</p>
+                  <p className="text-[10px] font-bold text-slate-400 tracking-wider font-sans uppercase mb-2">Current Sprint</p>
                 </div>
                 <Target className="w-5 h-5 text-purple-405" />
               </div>
@@ -671,16 +670,16 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
             </div>
 
             {/* Card 3: Assumption Tracker */}
-            <div className="neon-card p-6">
+            <div className="neon-card p-8">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 tracking-wider font-mono uppercase mb-2">Assumption Tracker</p>
+                  <p className="text-[10px] font-bold text-slate-400 tracking-wider font-sans uppercase mb-2">Assumption Tracker</p>
                 </div>
                 <Activity className="w-5 h-5 text-emerald-450" />
               </div>
               <div className="flex items-baseline gap-2 mb-2">
                 <p className="text-3xl font-extrabold text-emerald-400">{validatedCount}</p>
-                <p className="text-xs text-slate-550 font-mono">of {totalCount} validated</p>
+                <p className="text-xs text-slate-400 font-sans font-semibold">of {totalCount} validated</p>
               </div>
               <div className="flex gap-1.5 mt-4">
                 {assumptions.map((a) => (
@@ -688,45 +687,43 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                     key={a.id}
                     className={`flex-1 h-1.5 rounded-full ${
                       a.status === 'Validated'
-                        ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
+                        ? 'bg-emerald-500'
                         : a.status === 'Testing'
-                        ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.3)]'
+                        ? 'bg-amber-500'
                         : 'bg-slate-800'
                     }`}
                   />
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* The Horizon Scanner Table */}
+          </div>            {/* The Horizon Scanner Table */}
           <div className="neon-card overflow-hidden">
-            <div className="border-b border-slate-800/80 px-6 py-4 bg-[#0f172a40]">
+            <div className="border-b border-slate-800/80 px-8 py-6 bg-[#121824]">
               <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-cyan-400" />
                 The Horizon Scanner
               </h2>
-              <p className="text-xs text-slate-500 font-mono mt-1">30-DAY EXECUTION MATRIX WITH INTERACTIVE MICRO-STEPS</p>
+              <p className="text-xs text-slate-450 font-sans font-semibold mt-1">30-DAY EXECUTION MATRIX WITH INTERACTIVE MICRO-STEPS</p>
             </div>
 
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/40">
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 tracking-wider font-mono uppercase">
+                  <tr className="border-b border-slate-800 bg-[#121824]/50">
+                    <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase">
                       Assumption / Task
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 tracking-wider font-mono uppercase">
+                    <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase">
                       Category
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 tracking-wider font-mono uppercase">
+                    <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase">
                       Status
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-400 tracking-wider font-mono uppercase">
+                    <th className="px-8 py-5 text-left text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase">
                       Confidence
                     </th>
-                    <th className="px-6 py-3.5 text-center text-xs font-semibold text-slate-400 tracking-wider font-mono uppercase">
+                    <th className="px-8 py-5 text-center text-xs font-semibold text-slate-400 tracking-wider font-sans uppercase">
                       Actions
                     </th>
                   </tr>
@@ -736,13 +733,13 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                     <React.Fragment key={row.id}>
                       {/* Main Row */}
                       <tr
-                        className="border-b border-slate-800/60 hover:bg-[#0b112050] transition-colors cursor-pointer group"
+                        className="border-b border-slate-800/60 hover:bg-slate-800/20 transition-colors cursor-pointer group"
                         onClick={() => toggleRow(row.id)}
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           <p className="text-sm font-medium text-slate-200">{row.assumption}</p>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border ${getCategoryColor(
                               row.category
@@ -751,7 +748,7 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                             {row.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
                               row.status
@@ -761,12 +758,12 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                             {row.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           <span className={`text-sm font-semibold ${getConfidenceColor(row.confidence)}`}>
                             {row.confidence}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-8 py-5 text-center">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -785,9 +782,9 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
 
                       {/* Expanded Row - Micro Steps */}
                       {expandedRows.includes(row.id) && (
-                        <tr className="border-b border-slate-800 bg-[#050816]/40">
-                          <td colSpan={5} className="px-6 py-6">
-                            <div className="bg-[#0b1120b8] border border-slate-800/80 rounded-xl p-5 shadow-inner">
+                        <tr className="border-b border-slate-800 bg-[#090D16]/50">
+                          <td colSpan={5} className="px-8 py-6">
+                            <div className="bg-[#121824] border border-slate-800/80 rounded-xl p-8">
                               <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
                                 <Activity className="w-4 h-4 text-cyan-400" />
                                 30-Day Micro-Steps
@@ -796,7 +793,7 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                                 {row.microSteps.map((step, stepIdx) => (
                                   <div key={stepIdx} className="flex gap-3">
                                     <div className="flex-shrink-0">
-                                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-cyan-955/80 border border-cyan-850 text-[#22d3ee] text-xs font-semibold font-mono">
+                                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-[#090D16] border border-slate-800/80 text-cyan-400 text-xs font-bold font-sans">
                                         {stepIdx + 1}
                                       </div>
                                     </div>
@@ -821,14 +818,14 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
 
       {/* THE FRIENDLY CRITIC - Side Panel */}
       <div
-        className={`w-full lg:w-96 border-l border-slate-800 bg-[#0b1120e6] backdrop-blur-md flex flex-col overflow-hidden transition-all duration-300 ${
+        className={`w-full lg:w-96 border-l border-slate-800/80 bg-[#090D16] flex flex-col overflow-hidden transition-all duration-300 ${
           mobileMenuOpen ? 'fixed inset-0 top-16 lg:static z-30' : 'hidden lg:flex'
         }`}
       >
         {/* Panel Header */}
-        <div className="border-b border-slate-800/80 px-6 py-5 bg-[#0b112099]">
-          <h3 className="text-lg font-bold text-white">The Friendly Critic</h3>
-          <p className="text-xs text-slate-500 font-mono mt-1">SIMULATION FEEDBACK & REMEDIATION</p>
+        <div className="border-b border-slate-800/80 px-6 py-5 bg-[#090D16]">
+          <h3 className="text-lg font-bold text-white font-sans">The Friendly Critic</h3>
+          <p className="text-xs text-slate-450 font-sans font-semibold mt-1">SIMULATION FEEDBACK & REMEDIATION</p>
         </div>
 
         {/* Panel Content */}
@@ -836,16 +833,16 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
           {/* Simulation Log */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-              <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-mono">Simulation Log</h4>
+              <div className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+              <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-sans">Simulation Log</h4>
             </div>
-            <div className="bg-slate-955/80 text-slate-100 rounded-xl p-4 font-mono text-xs space-y-1.5 border border-slate-850 max-h-60 overflow-y-auto shadow-inner leading-relaxed">
+            <div className="bg-[#121824] text-slate-100 rounded-xl p-6 font-mono text-xs space-y-1.5 border border-slate-800/80 max-h-60 overflow-y-auto leading-relaxed shadow-none">
               <p><span className="text-[#22d3ee] font-bold">$</span> osstart-simulator --personas 1000</p>
               {dashboardData?.simulation.logs.map((log: string, logIdx: number) => {
                 let colorClass = 'text-slate-400';
                 if (log.startsWith('[WARN]') || log.includes('WARN')) colorClass = 'text-amber-400 font-medium';
                 if (log.startsWith('[CRITICAL]') || log.includes('CRITICAL')) colorClass = 'text-rose-450 font-bold';
-                if (log.startsWith('[SUCCESS]') || log.startsWith('✓')) colorClass = 'text-emerald-400 font-medium';
+                if (log.startsWith('[SUCCESS]') || log.startsWith('✓')) colorClass = 'text-[#10b981] font-medium';
                 return (
                   <p key={logIdx} className={colorClass}>
                     {log}
@@ -857,7 +854,7 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                   <p className="text-slate-500">Initializing crash-test environment...</p>
                   <p className="text-slate-500"><span className="text-cyan-400">&gt;</span> Simulating 1,000 professional personas</p>
                   <p className="text-amber-400 font-medium">⚠ Found critical risks (3)</p>
-                  <p className="text-emerald-400 font-medium">✓ Simulation complete</p>
+                  <p className="text-[#10b981] font-medium">✓ Simulation complete</p>
                 </>
               )}
             </div>
@@ -865,40 +862,40 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
 
           {/* Key Findings */}
           <div>
-            <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-mono mb-3">Key Findings</h4>
+            <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-sans mb-3">Key Findings</h4>
             <div className="space-y-2.5">
               {dashboardData ? (
                 <>
                   <div className="flex gap-2.5 p-3 bg-rose-955/30 rounded-xl border border-rose-900/40">
-                    <AlertCircle className="w-4 h-4 text-rose-450 flex-shrink-0 mt-0.5" />
-                    <div className="text-xs text-rose-300">
+                    <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-rose-300 font-sans">
                       <strong>Risk Assessment:</strong> {dashboardData.simulation.churn_risk}
                     </div>
                   </div>
                   <div className="flex gap-2.5 p-3 bg-emerald-955/30 rounded-xl border border-emerald-900/40">
                     <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-                    <div className="text-xs text-emerald-300">
+                    <div className="text-xs text-emerald-300 font-sans">
                       <strong>Customer Adoption Score:</strong> {dashboardData.simulation.adoption_score}/100
                     </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="flex gap-2.5 p-3 bg-rose-955/30 rounded-xl border border-rose-900/40">
-                    <AlertCircle className="w-4 h-4 text-rose-450 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-rose-300">
+                  <div className="flex gap-2.5 p-3 bg-rose-950/30 rounded-xl border border-rose-900/40">
+                    <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-rose-300 font-sans">
                       <strong>42%</strong> flagged safety concerns about in-home access
                     </p>
                   </div>
                   <div className="flex gap-2.5 p-3 bg-amber-955/30 rounded-xl border border-amber-900/40">
                     <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-amber-300">
+                    <p className="text-xs text-amber-300 font-sans">
                       <strong>38%</strong> questioned pet groomer vetting process
                     </p>
                   </div>
                   <div className="flex gap-2.5 p-3 bg-blue-955/30 rounded-xl border border-blue-900/40">
-                    <AlertCircle className="w-4 h-4 text-blue-450 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-blue-300">
+                    <AlertCircle className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-blue-300 font-sans">
                       <strong>31%</strong> concerned about pricing vs. traditional salons
                     </p>
                   </div>
@@ -909,8 +906,8 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
 
           {/* AI Consultancy Brief */}
           <div>
-            <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-mono mb-3">AI Consultancy Brief</h4>
-            <div className="space-y-3 text-xs text-slate-350 leading-relaxed max-h-[350px] overflow-y-auto pr-1">
+            <h4 className="text-[10px] font-bold text-slate-400 tracking-wider uppercase font-sans mb-3">AI Consultancy Brief</h4>
+            <div className="space-y-3 text-xs text-slate-350 leading-relaxed max-h-[350px] overflow-y-auto pr-1 font-sans">
               {dashboardData ? (
                 <div>
                   {renderMarkdown(dashboardData.consultancy_brief)}
@@ -918,22 +915,22 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
               ) : (
                 <>
                   <div>
-                    <p className="font-bold text-white mb-1">🔒 Priority #1: Security & Trust</p>
-                    <p className="text-slate-450">
+                    <p className="font-bold text-white mb-1 font-sans">🔒 Priority #1: Security & Trust</p>
+                    <p className="text-slate-450 font-sans">
                       Implement background checks, insurance requirements, and live GPS tracking during
                       appointments. Consider a "trial groom" with owner present.
                     </p>
                   </div>
                   <div>
-                    <p className="font-bold text-white mb-1">💰 Priority #2: Pricing Strategy</p>
-                    <p className="text-slate-455">
+                    <p className="font-bold text-white mb-1 font-sans">💰 Priority #2: Pricing Strategy</p>
+                    <p className="text-slate-455 font-sans">
                       Your 20% take rate may be unsustainable. Groomer feedback suggests 15% is necessary
                       for gig supply. Adjust margins or reduce CAC.
                     </p>
                   </div>
                   <div>
-                    <p className="font-bold text-white mb-1">👥 Priority #3: Market Expansion</p>
-                    <p className="text-slate-455">
+                    <p className="font-bold text-white mb-1 font-sans">👥 Priority #3: Market Expansion</p>
+                    <p className="text-slate-455 font-sans">
                       Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                       economics and lifetime customer value.
                     </p>
