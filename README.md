@@ -112,6 +112,6 @@ When deploying your own fork, ensure all keys listed in your `.env.local` file a
 
 <div align="center">
 
-Crafted with ❤️ by **Team Revitalizers** for the **USAII Global AI Hackathon**
+Crafted with ❤️ by **Team Revitalizers** for the **USAII Global AI Hackathon 2026**
 
 </div>
