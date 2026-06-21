@@ -15,6 +15,15 @@ import {
   BarChart3,
   X,
   Menu,
+  Lock,
+  Unlock,
+  Globe,
+  Users,
+  Briefcase,
+  Copy,
+  ExternalLink,
+  ShieldCheck,
+  ChevronRight
 } from 'lucide-react';
 
 interface FormData {
@@ -103,6 +112,42 @@ export default function OsstartDashboard() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [presetIndex, setPresetIndex] = useState(0);
 
+  // Matchmaking states
+  const [localAssumptions, setLocalAssumptions] = useState<AssumptionRow[]>([]);
+  const [isMatchmakingLoading, setIsMatchmakingLoading] = useState(false);
+  const [matchmakingError, setMatchmakingError] = useState<string | null>(null);
+  const [matchmakingMatches, setMatchmakingMatches] = useState<any[] | null>(null);
+  const [blindPayload, setBlindPayload] = useState<any | null>(null);
+  const [isHubActive, setIsHubActive] = useState(false);
+  const [selectedDisclosureMatch, setSelectedDisclosureMatch] = useState<any | null>(null);
+  const [disclosureAuthChecked, setDisclosureAuthChecked] = useState(false);
+  const [disclosureSuccess, setDisclosureSuccess] = useState(false);
+  const [disclosureToken, setDisclosureToken] = useState<string | null>(null);
+  const [outreachMessage, setOutreachMessage] = useState('');
+  const [matchmakingLoaderMessage, setMatchmakingLoaderMessage] = useState('');
+
+  // Synchronize localAssumptions with dashboardData or fallback to mock
+  useEffect(() => {
+    if (dashboardData?.matrix) {
+      setLocalAssumptions(
+        dashboardData.matrix.map((item: any, idx: number) => ({
+          id: `task-${idx}`,
+          assumption: item.task_name,
+          category: (item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()) as any,
+          status: idx === 0 ? 'Testing' : 'Unverified',
+          confidence: (item.confidence_level.charAt(0).toUpperCase() + item.confidence_level.slice(1).toLowerCase()) as any,
+          microSteps: item.micro_steps || [],
+        }))
+      );
+    } else {
+      setLocalAssumptions(mockAssumptions);
+    }
+    // Reset matchmaking state when data resets
+    setMatchmakingMatches(null);
+    setIsHubActive(false);
+    setBlindPayload(null);
+  }, [dashboardData]);
+
   const handleAutofillPreset = () => {
     const preset = DEMO_PRESETS[presetIndex];
     setFormData({
@@ -187,16 +232,96 @@ export default function OsstartDashboard() {
     },
   ];
 
-  const assumptions: AssumptionRow[] = dashboardData?.matrix
-    ? dashboardData.matrix.map((item: any, idx: number) => ({
-        id: `task-${idx}`,
-        assumption: item.task_name,
-        category: (item.category.charAt(0).toUpperCase() + item.category.slice(1).toLowerCase()) as any,
-        status: idx === 0 ? 'Testing' : 'Unverified',
-        confidence: (item.confidence_level.charAt(0).toUpperCase() + item.confidence_level.slice(1).toLowerCase()) as any,
-        microSteps: item.micro_steps || [],
-      }))
-    : mockAssumptions;
+  const assumptions = localAssumptions;
+
+  const updateRowStatus = (id: string, newStatus: 'Unverified' | 'Testing' | 'Validated') => {
+    setLocalAssumptions((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+  };
+
+  const handleValidateAll = () => {
+    setLocalAssumptions((prev) =>
+      prev.map((item) => ({ ...item, status: 'Validated' }))
+    );
+  };
+
+  const handleActivateMatchmaking = async () => {
+    setIsMatchmakingLoading(true);
+    setMatchmakingError(null);
+    setIsHubActive(true);
+
+    const loadingMessages = [
+      "Compiling objective project metrics...",
+      "Stripping demographic & regional references (Blind Pitch Mode)...",
+      "Evaluating alignment scores across neural hub connections...",
+      "Applying 20% wildcard exploration logic to break echo chambers...",
+      "Generating secure matchmaking profile nodes..."
+    ];
+
+    let msgIndex = 0;
+    setMatchmakingLoaderMessage(loadingMessages[0]);
+    const messageInterval = setInterval(() => {
+      msgIndex++;
+      if (msgIndex < loadingMessages.length) {
+        setMatchmakingLoaderMessage(loadingMessages[msgIndex]);
+      }
+    }, 850);
+
+    try {
+      const payload = {
+        business_model_parameters: {
+          core_idea: formData.coreIdea,
+          biggest_assumption: formData.biggestAssumption,
+          categories: localAssumptions.map(a => a.category)
+        },
+        target_demographic_strings: formData.targetAudience.split(',').map(s => s.trim()),
+        risk_vector_scores: {
+          clarity_score: ideaClarity,
+          adoption_score: dashboardData ? dashboardData.simulation.adoption_score : 35,
+          churn_risk: dashboardData ? dashboardData.simulation.churn_risk : '70% HIGH CHURN RISK',
+          milestones_validated: validatedCount,
+          total_milestones: totalCount
+        }
+      };
+
+      const res = await fetch('/api/matchmaking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      clearInterval(messageInterval);
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Neural matchmaking service error.");
+      }
+
+      setMatchmakingMatches(data.matches);
+      setBlindPayload(data.blind_payload);
+    } catch (err: any) {
+      clearInterval(messageInterval);
+      setMatchmakingError(err.message || "An unexpected error occurred during matchmaking.");
+    } finally {
+      setIsMatchmakingLoading(false);
+    }
+  };
+
+  const handleApproveDisclosure = () => {
+    const token = 'sec_token_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+    setDisclosureToken(token);
+    setDisclosureSuccess(true);
+    const link = `https://osstart.io/verify/${token}`;
+    navigator.clipboard.writeText(link).catch(e => console.error("Clipboard copy failed:", e));
+  };
+
+  const handleCloseDisclosureModal = () => {
+    setSelectedDisclosureMatch(null);
+    setDisclosureAuthChecked(false);
+    setDisclosureSuccess(false);
+    setDisclosureToken(null);
+  };
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) =>
@@ -388,13 +513,10 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
     }
   };
 
-  const ideaClarity = dashboardData
-    ? dashboardData.clarity_score
-    : Math.round((assumptions.filter((a) => a.status === 'Validated').length / assumptions.length) * 100);
-  const validatedCount = dashboardData
-    ? Math.round(assumptions.length * (ideaClarity / 100))
-    : assumptions.filter((a) => a.status === 'Validated').length;
-  const totalCount = assumptions.length;
+  const validatedCount = localAssumptions.filter((a) => a.status === 'Validated').length;
+  const totalCount = localAssumptions.length;
+  const ideaClarity = totalCount > 0 ? Math.round((validatedCount / totalCount) * 100) : 0;
+  const hasTestingMilestones = localAssumptions.some((a) => a.status === 'Testing');
 
   // LOADING / SIMULATION VIEW
   if (isLoading) {
@@ -586,6 +708,60 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
     );
   }
 
+  const renderMatchCard = (match: any, idx: number) => {
+    return (
+      <div 
+        key={idx} 
+        className={`bg-[#F8FAFC] border border-slate-200/65 rounded-xl p-5 hover:border-indigo-400 hover:shadow-md transition-all duration-205 flex flex-col justify-between relative text-left ${
+          match.is_wildcard ? 'ring-2 ring-indigo-500/20 bg-indigo-50/10' : ''
+        }`}
+      >
+        <div>
+          {/* Alignment and Name */}
+          <div className="flex items-start justify-between gap-2 mb-1.5">
+            <h5 className="font-extrabold text-sm text-slate-900 leading-tight font-sans">
+              {match.name}
+            </h5>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 rounded-full flex-shrink-0 font-sans">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              {match.alignment_score}%
+            </span>
+          </div>
+
+          {/* Subtitle Details */}
+          <p className="text-[11px] font-bold text-slate-500 font-sans uppercase tracking-wide mb-2">
+            {match.details}
+          </p>
+
+          {/* Value Prop */}
+          <p className="text-xs text-slate-650 leading-relaxed font-sans mb-4">
+            {match.value_proposition}
+          </p>
+
+          {/* Wildcard Highlight */}
+          {match.is_wildcard && (
+            <div className="mb-4 p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg text-[10px] text-indigo-700 font-sans">
+              <span className="font-bold uppercase tracking-wider block mb-0.5">🌟 Exploration Wildcard Match</span>
+              <p className="leading-snug">{match.wildcard_reason}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Friction Outreach Button */}
+        <button
+          onClick={() => {
+            setSelectedDisclosureMatch(match);
+            setOutreachMessage(`Hello Team at ${match.name},\n\nI am the founder of a validated startup platform. Our core business mechanics focus on ${match.is_wildcard ? 'cross-sector operational synergy' : 'optimized workflow patterns'} matching your investment mandate. Under blind stress-testing, our platform achieved a ${ideaClarity}% Clarity Score, ${dashboardData ? dashboardData.simulation.adoption_score : 35}/100 Consumer Adoption, and we have fully validated ${validatedCount} out of our ${totalCount} core execution milestones.\n\nI would love to securely disclose our verified 30-Day Execution Roadmap for your review.\n\nBest regards,\n[Verified Founder]`);
+          }}
+          className="w-full bg-[#FFFFFF] hover:bg-indigo-50/50 border border-indigo-200 text-indigo-600 hover:text-indigo-700 transition-all font-bold font-sans py-2 px-3 rounded-lg text-xs mt-1 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+        >
+          Request Secure Roadmap Disclosure
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row relative z-10 text-slate-100">
       {/* Mobile Menu Button */}
@@ -749,14 +925,34 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                           </span>
                         </td>
                         <td className="px-8 py-5">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
-                              row.status
-                            )}`}
-                          >
-                            {getStatusIcon(row.status)}
-                            {row.status}
-                          </span>
+                          <div className="relative inline-block">
+                            <select
+                              value={row.status}
+                              onChange={(e) => {
+                                updateRowStatus(row.id, e.target.value as any);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className={`appearance-none cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-1.5 pr-8 text-xs font-semibold rounded-full border outline-none bg-transparent transition-all hover:bg-slate-900/50 ${getStatusColor(
+                                row.status
+                              )}`}
+                              style={{
+                                backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23${
+                                  row.status === 'Validated'
+                                    ? '34d399'
+                                    : row.status === 'Testing'
+                                    ? 'fbbf24'
+                                    : '94a3b8'
+                                }' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E")`,
+                                backgroundPosition: 'right 0.5rem center',
+                                backgroundSize: '1.25rem 1.25rem',
+                                backgroundRepeat: 'no-repeat'
+                              }}
+                            >
+                              <option value="Unverified" className="bg-[#121824] text-slate-300">Unverified</option>
+                              <option value="Testing" className="bg-[#121824] text-slate-300">Testing</option>
+                              <option value="Validated" className="bg-[#121824] text-slate-300">Validated</option>
+                            </select>
+                          </div>
                         </td>
                         <td className="px-8 py-5">
                           <span className={`text-sm font-semibold ${getConfidenceColor(row.confidence)}`}>
@@ -803,6 +999,20 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
                                   </div>
                                 ))}
                               </div>
+                              {row.status !== 'Validated' && (
+                                <div className="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateRowStatus(row.id, 'Validated');
+                                    }}
+                                    className="bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-900/60 text-emerald-400 font-sans font-semibold text-xs py-2 px-4 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    Mark Milestone as Validated
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -813,7 +1023,349 @@ Consider adjacent verticals (pet sitting, dog walking, training) to improve unit
               </table>
             </div>
           </div>
+
+          {/* Strategic Ecosystem Matchmaking Hub */}
+          <div className="bg-[#FFFFFF] text-slate-900 rounded-2xl p-8 border border-slate-200 shadow-sm mt-8 relative overflow-hidden transition-all duration-300">
+            {/* Soft decorative blur or pattern in the background */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/40 rounded-full blur-3xl -z-10 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-50/30 rounded-full blur-2xl -z-10 pointer-events-none" />
+
+            {/* Header */}
+            <div className="border-b border-slate-100 pb-5 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600">
+                    {hasTestingMilestones ? <Lock className="w-4.5 h-4.5" /> : <Unlock className="w-4.5 h-4.5" />}
+                  </div>
+                  <h3 className="text-xl font-bold tracking-tight text-slate-900 font-sans">
+                    Strategic Ecosystem Matchmaking Hub
+                  </h3>
+                </div>
+                <p className="text-[10px] font-bold text-slate-400 tracking-wider font-sans uppercase">
+                  TRANSITIONING FROM SIMULATOR TO CONNECTED ECOSYSTEM
+                </p>
+              </div>
+
+              {/* Status Indicator */}
+              <div className="flex items-center gap-2 self-start md:self-auto">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${
+                  hasTestingMilestones 
+                    ? 'bg-amber-50 text-amber-600 border-amber-200' 
+                    : 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                }`}>
+                  {hasTestingMilestones ? (
+                    <>
+                      <Clock className="w-3.5 h-3.5 animate-pulse" />
+                      Pending Validation
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      Ecosystem Ready
+                    </>
+                  )}
+                </span>
+                {hasTestingMilestones && (
+                  <button
+                    onClick={handleValidateAll}
+                    className="text-[10px] text-indigo-600 hover:text-indigo-800 underline font-semibold cursor-pointer border-none bg-transparent ml-1"
+                    title="Cheat code to validate all milestones for review convenience"
+                  >
+                    Demo: Validate All
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Body State 1: Locked State */}
+            {hasTestingMilestones ? (
+              <div className="py-8 text-center max-w-lg mx-auto space-y-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl text-slate-400 mb-2 relative">
+                  <Lock className="w-8 h-8" />
+                  <span className="w-2.5 h-2.5 bg-amber-500 rounded-full absolute top-4 right-4 animate-ping" />
+                  <span className="w-2.5 h-2.5 bg-amber-500 rounded-full absolute top-4 right-4" />
+                </div>
+                <h4 className="text-base font-bold text-slate-800">Connection Engine Engaged but Locked</h4>
+                <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                  The matchmaking ecosystem remains in standby. In compliance with high-stakes relationship safety, Osstart requires all <strong className="text-slate-700">"Testing"</strong> milestones in your Horizon Scanner to be validated before connecting you to actual venture and peer networks.
+                </p>
+                <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 text-xs text-slate-600 font-semibold inline-block font-sans">
+                  Current Block: {localAssumptions.filter(a => a.status === 'Testing').length} active milestone(s) require validation.
+                </div>
+              </div>
+            ) : (
+              /* Body State 2: Unlocked / Results View */
+              <div className="space-y-6">
+                {!isHubActive && (
+                  <div className="py-6 text-center max-w-xl mx-auto space-y-5">
+                    <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                      All execution assumptions have been successfully validated. You can now compile the local project state (<code className="text-xs bg-slate-50 px-1 py-0.5 rounded font-mono text-slate-600">business_model_parameters</code>, <code className="text-xs bg-slate-50 px-1 py-0.5 rounded font-mono text-slate-600">target_demographic_strings</code>, and <code className="text-xs bg-slate-50 px-1 py-0.5 rounded font-mono text-slate-600">risk_vector_scores</code>) to query our matchmaking service.
+                    </p>
+                    <button
+                      onClick={handleActivateMatchmaking}
+                      className="bg-[#4F46E5] hover:bg-[#4338CA] text-white transition-all duration-200 py-3.5 px-8 rounded-xl font-bold font-sans tracking-wide uppercase shadow-sm flex items-center justify-center gap-2 mx-auto cursor-pointer"
+                    >
+                      <Zap className="w-4 h-4 fill-current" />
+                      Activate Network Alignment
+                    </button>
+                  </div>
+                )}
+
+                {/* Loading State */}
+                {isMatchmakingLoading && (
+                  <div className="py-12 text-center space-y-4">
+                    <div className="inline-block relative w-12 h-12">
+                      <div className="w-12 h-12 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin" />
+                    </div>
+                    <p className="text-xs font-mono font-semibold text-indigo-600 animate-pulse animate-pulse">
+                      {matchmakingLoaderMessage}
+                    </p>
+                  </div>
+                )}
+
+                {/* Error State */}
+                {matchmakingError && (
+                  <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-600 flex items-start gap-2.5">
+                    <AlertCircle className="w-4.5 h-4.5 text-rose-500 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold">Matchmaking Request Failed</p>
+                      <p className="mt-0.5">{matchmakingError}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Matchmaking Results Grid */}
+                {matchmakingMatches && !isMatchmakingLoading && (
+                  <div className="space-y-6 animate-fade-in">
+                    {/* Secure Payload Auditor Debugger */}
+                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-5">
+                      <details className="group">
+                        <summary className="list-none flex items-center justify-between cursor-pointer">
+                          <div className="flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                            <span className="text-xs font-bold text-slate-800 font-sans">
+                              Responsible AI Audit: Blind Pitch Payload
+                            </span>
+                            <span className="bg-emerald-100 text-emerald-800 text-[9px] font-bold px-1.5 py-0.5 rounded font-sans uppercase">
+                              Active
+                            </span>
+                          </div>
+                          <span className="text-xs font-semibold text-indigo-600 group-open:hidden">Show Payload JSON</span>
+                          <span className="text-xs font-semibold text-indigo-600 hidden group-open:block">Hide Payload JSON</span>
+                        </summary>
+                        <div className="mt-4 pt-4 border-t border-slate-105 space-y-3 font-sans text-xs text-left">
+                          <p className="text-slate-500 leading-relaxed">
+                            In <strong className="text-slate-700">Blind Pitch Matching Mode</strong>, all demographic keywords, regional data, and hype words are programmatically stripped from the matchmaking request payload. This forces the matching algorithm to pair you purely based on core mechanics, metrics, and milestone velocity.
+                          </p>
+                          <pre className="bg-slate-900 text-slate-200 p-4 rounded-xl font-mono text-[10px] overflow-x-auto max-h-48 leading-normal">
+                            {JSON.stringify(blindPayload, null, 2)}
+                          </pre>
+                        </div>
+                      </details>
+                    </div>
+
+                    {/* The 3-Column Results Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Venture Capitalists Column */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-left">
+                          <Briefcase className="w-4.5 h-4.5 text-indigo-600" />
+                          <h4 className="font-bold text-sm text-slate-900 font-sans uppercase tracking-wide">
+                            Venture Capital Options
+                          </h4>
+                          <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full font-sans ml-auto">
+                            {matchmakingMatches.filter(m => m.category === 'Venture Capitalist').length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {matchmakingMatches
+                            .filter(m => m.category === 'Venture Capitalist')
+                            .map((match, idx) => renderMatchCard(match, idx))}
+                        </div>
+                      </div>
+
+                      {/* Regional Incubators Column */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-left">
+                          <Globe className="w-4.5 h-4.5 text-indigo-600" />
+                          <h4 className="font-bold text-sm text-slate-900 font-sans uppercase tracking-wide">
+                            Regional Incubators
+                          </h4>
+                          <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-full font-sans ml-auto">
+                            {matchmakingMatches.filter(m => m.category === 'Regional Incubator').length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {matchmakingMatches
+                            .filter(m => m.category === 'Regional Incubator')
+                            .map((match, idx) => renderMatchCard(match, idx))}
+                        </div>
+                      </div>
+
+                      {/* Peer Networks Column */}
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100 text-left">
+                          <Users className="w-4.5 h-4.5 text-indigo-600" />
+                          <h4 className="font-bold text-sm text-slate-900 font-sans uppercase tracking-wide">
+                            Peer Networks
+                          </h4>
+                          <span className="bg-slate-100 text-slate-605 text-[10px] font-bold px-2 py-0.5 rounded-full font-sans ml-auto">
+                            {matchmakingMatches.filter(m => m.category === 'Complementary Peer Founder').length}
+                          </span>
+                        </div>
+                        <div className="space-y-4">
+                          {matchmakingMatches
+                            .filter(m => m.category === 'Complementary Peer Founder')
+                            .map((match, idx) => renderMatchCard(match, idx))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Human-in-the-Loop Secure Disclosure Modal */}
+        {selectedDisclosureMatch && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-955/75 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl border border-slate-202 shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 relative font-sans text-slate-800 animate-in fade-in zoom-in-95 duration-200">
+              {/* Close Button */}
+              <button
+                onClick={handleCloseDisclosureModal}
+                className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-105 text-slate-400 hover:text-slate-600 transition-colors border-none bg-transparent cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Modal Title */}
+              <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3 text-left">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900 leading-tight">
+                    Secure Roadmap Disclosure
+                  </h3>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">
+                    Human-in-the-Loop Verification Gate
+                  </p>
+                </div>
+              </div>
+
+              {!disclosureSuccess ? (
+                <div className="space-y-4 text-left">
+                  <p className="text-xs text-slate-500 leading-relaxed font-sans">
+                    You are initiating a manual disclosure request to <strong className="text-slate-800">{selectedDisclosureMatch.name}</strong>. In compliance with our Responsible AI framework, Osstart enforces absolute manual validation. Automated cold pitches are strictly prohibited.
+                  </p>
+
+                  {/* Secure Disclosed Data Preview */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-2 text-xs font-sans">
+                    <span className="font-bold text-slate-805 block mb-1">Disclosed Verification Metrics Payload:</span>
+                    <div className="grid grid-cols-2 gap-2 text-slate-600">
+                      <div>✓ Idea Clarity: <strong className="text-slate-800">{ideaClarity}%</strong></div>
+                      <div>✓ Market Adoption: <strong className="text-slate-800">{dashboardData ? dashboardData.simulation.adoption_score : 35}/100</strong></div>
+                      <div>✓ Churn Risk: <strong className="text-slate-800">{dashboardData ? dashboardData.simulation.churn_risk : '70% HIGH RISK'}</strong></div>
+                      <div>✓ Milestones: <strong className="text-slate-800">{validatedCount}/{totalCount} Validated</strong></div>
+                    </div>
+                  </div>
+
+                  {/* Custom Outreach Input */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-705 uppercase font-sans">
+                      Personalized Outreach Message Draft
+                    </label>
+                    <textarea
+                      value={outreachMessage}
+                      onChange={(e) => setOutreachMessage(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-slate-700 font-sans"
+                      rows={6}
+                    />
+                    <p className="text-[10px] text-slate-450 leading-snug font-sans">
+                      Customize this pitch message. Keep it professional. It will be sent alongside the secure read-only token link.
+                    </p>
+                  </div>
+
+                  {/* Verification Checkbox */}
+                  <div className="flex items-start gap-2.5 p-3 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                    <input
+                      type="checkbox"
+                      id="auth-checkbox"
+                      checked={disclosureAuthChecked}
+                      onChange={(e) => setDisclosureAuthChecked(e.target.checked)}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 cursor-pointer"
+                    />
+                    <label htmlFor="auth-checkbox" className="text-xs text-indigo-850 select-none cursor-pointer leading-snug font-sans">
+                      I explicitly authorize the generation of a secure roadmap access token and approve sharing my verified metrics with <strong className="text-indigo-950">{selectedDisclosureMatch.name}</strong>.
+                    </label>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-2 flex justify-end gap-3 border-t border-slate-100 font-sans">
+                    <button
+                      onClick={handleCloseDisclosureModal}
+                      className="px-4 py-2 border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-bold rounded-xl text-slate-600 cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleApproveDisclosure}
+                      disabled={!disclosureAuthChecked}
+                      className="px-5 py-2 bg-[#4F46E5] hover:bg-[#4338CA] disabled:bg-slate-200 disabled:text-slate-400 disabled:border-transparent text-white transition-all text-xs font-bold rounded-xl flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      Approve Disclosure & Send Verification Link
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Success State */
+                <div className="text-center py-6 space-y-5 text-left font-sans">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-500 mx-auto">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-base text-slate-900 text-center">Roadmap Disclosure Approved</h4>
+                    <p className="text-xs text-slate-505 mt-1 max-w-sm mx-auto text-center">
+                      A secure verification link containing a read-only token has been created. The partner has been notified of your validation milestones.
+                    </p>
+                  </div>
+
+                  {/* Token and link */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 font-mono text-[10px] space-y-2.5 max-w-md mx-auto text-left">
+                    <div>
+                      <span className="text-slate-400 block uppercase font-bold text-[9px] font-sans tracking-wide">SECURE DISCLOSURE TOKEN</span>
+                      <span className="text-slate-800 break-all">{disclosureToken}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block uppercase font-bold text-[9px] font-sans tracking-wide">VERIFIED ACCESS LINK (COPIED)</span>
+                      <span className="text-indigo-600 select-all break-all">https://osstart.io/verify/{disclosureToken}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center gap-3 pt-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://osstart.io/verify/${disclosureToken}`);
+                      }}
+                      className="px-4 py-2 border border-slate-200 hover:bg-slate-50 transition-colors text-xs font-bold rounded-xl text-slate-600 flex items-center gap-1 cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                      Copy Link
+                    </button>
+                    <button
+                      onClick={handleCloseDisclosureModal}
+                      className="px-5 py-2 bg-slate-900 hover:bg-slate-800 transition-colors text-white text-xs font-bold rounded-xl cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* THE FRIENDLY CRITIC - Side Panel */}
